@@ -1,0 +1,170 @@
+Product Brief – AI Travel Concierge (Amended with PMF Insights)
+1. Vision
+
+To redefine travel booking by replacing search and comparison with trusted, AI-powered trip creation — so travelers can focus on experiences, not logistics.
+
+We envision a world where planning a trip is as simple as telling your AI concierge, “I want to go to Rome in October with my friends,” and instantly receiving a curated, guaranteed, and bookable journey.
+
+2. Mission
+
+To become the world’s most trusted AI travel concierge by:
+
+Eliminating planning chaos with conversational AI that transforms intent into curated itineraries.
+
+Restoring trust in travel booking through transparent price guarantees, auto-rebooking, and verified reviews.
+
+Making travel collaborative with group boards, consensus tools, and shared payments.
+
+Unlocking unique experiences by bundling live events, restaurants, and local gems alongside flights and stays.
+
+Aligning incentives with a hybrid business model that lets travelers pay fairly — subscription for frequent users, per-trip for casuals, and “only-if-we-save-you” for skeptics.
+
+3. Target Users & Segments (Ranked by PMF Potential)
+
+Friend Groups Planning Events (Highest PMF potential)
+
+25–40 years old, $50–150K income, social media active
+
+Pain: consensus + split payments chaos
+
+Willingness to pay: $39–59 per group trip
+
+Frequent Business + Leisure Travelers
+
+30–50 years old, $100K+ income, 6+ trips/year
+
+Pain: efficiency + rebooking protection
+
+Willingness to pay: $89/year subscription
+
+Young Couples (Secondary)
+
+28–40 years old, dual income, 2–3 trips/year
+
+Pain: curation + trust
+
+Willingness to pay: $9–15 per trip
+
+Lower Priority Segments: Families (price-sensitive, complex needs), skeptics/bargain hunters (require proof of savings first).
+
+4. User Needs & Pain Points
+
+Overchoice → thousands of hotels & flights to compare.
+
+Lack of trust → fake reviews, hidden fees, vague guarantees.
+
+Group coordination complexity → consensus-building, payment splitting, communication.
+
+Experience FOMO → missing concerts, sports, or festivals during trips.
+
+Leakage → users plan in one place but book across multiple sites.
+
+5. Core Value Propositions
+
+AI Trip Concierge → conversational input → 3 curated trip bundles.
+
+Trust Layer → real price guarantees + auto-rebooking.
+
+Group Collaboration → shared boards, voting, consensus, split payments.
+
+Experience Integration → bundled events, restaurants, and local gems.
+
+All-in-One Checkout → one platform for everything.
+
+6. Key Features (MVP)
+
+Conversational AI trip planning.
+
+Group collaboration board with consensus tools + split payments.
+
+Trip Pass booking with price guarantee + auto-rebooking.
+
+Hotel + apartment inventory.
+
+Event integration (sports, concerts, festivals).
+
+Transparent checkout.
+
+Mobile-first app for in-trip use.
+
+7. Differentiators
+
+Trust-first → real guarantees, refunds-to-card, capped savings-share.
+
+Group-first wedge → collaboration tools + payments, no OTA offers this.
+
+Deterministic advantage → all-in-one booking removes leakage.
+
+Emotional immersion → trip trailers, mood boards.
+
+Supply-side moat → boutique hotel + event partnerships for exclusivity.
+
+Business model innovation → hybrid of Trip Pass, Subscription, Savings-Share.
+
+8. Business Model (Hybrid)
+
+Free Tier → AI planning, event discovery, 2 saved itineraries.
+
+Trip Pass → $9–15 (individual/couple), $39–59 (group).
+
+Pro Subscription → $12.99/month or $89/year.
+
+Savings-Share → 10–15% of verified savings, capped at $75/trip.
+
+Supplier partnerships → boutique hotels, event venues, direct bookings.
+
+9. Metrics for Success (KPIs)
+
+Acquisition → # of new accounts created.
+
+Activation → % creating ≥2 itineraries in 30 days (magic number).
+
+Conversion → % upgrading to Trip Pass/Subscription.
+
+Retention → Month 3 retention >60% for subscription users.
+
+Trust → Guarantee/refund satisfaction score.
+
+Engagement → Group creation rate (>30%), repeat Trip Pass rate (>50%).
+
+Trip Score metric → composite of itineraries × group members × price quotes viewed.
+
+10. Roadmap (High-Level)
+
+Phase 1 (0–6 months): Group Travel MVP
+
+Launch MVP: group boards + payments + Trip Pass.
+
+Founder's Concierge program: manually handle first 50 trips.
+
+Validate demand with fake door tests + A/B pricing.
+
+Phase 2 (6–18 months): Retention & Trust Premium
+
+Launch Pro Subscription.
+
+Loyalty optimization, family sharing.
+
+Run trust-focused experiments (price guarantee vs feature messaging).
+
+Phase 3 (18+ months): Expansion & Supply-Side Moat
+
+Savings-Share for skeptics.
+
+Supplier partnerships: boutique hotels, direct event access.
+
+SMB/enterprise pilots.
+
+International expansion with mobile-first localization.
+
+11. Risks & Mitigation
+
+AI accuracy risk → phased rollout + human-in-loop early.
+
+Integration complexity → start with limited suppliers, expand APIs.
+
+Auto-rebooking operations → cap liability + automation pilots.
+
+Subscription fatigue → hybrid model ensures flexibility.
+
+Supplier resistance → start with niche/boutique partnerships.

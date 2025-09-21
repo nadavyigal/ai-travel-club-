@@ -1,0 +1,152 @@
+# 📊 Pitch Deck Structure – AI Travel Concierge (McKinsey Style)
+
+---
+
+## 1. Title Slide
+
+* **Logo / Product Name**: AI Travel Concierge
+* **Tagline**: *“Plan less. Experience more.”*
+* Contact info / team members
+
+---
+
+## 2. Executive Summary
+
+* Travel booking is broken: overwhelming choices, hidden fees, lack of trust.
+* AI Concierge replaces search with curated, guaranteed trips.
+* Business model: hybrid (Trip Pass, Subscription, Savings-Share).
+* Huge opportunity: \$800B+ online travel market ripe for disruption.
+
+---
+
+## 3. Problem Statement
+
+* **Overchoice**: Thousands of hotels, flights, reviews → decision fatigue.
+* **Lack of trust**: Fake reviews, hidden fees, vague guarantees.
+* **Planning chaos**: Especially for groups (coordination, payments).
+* **Leakage**: Travelers plan in one place but book elsewhere.
+* **Missed experiences**: Unique events overlooked during planning.
+
+---
+
+## 4. Market Opportunity
+
+* Online travel market: \$800B+ TAM.
+* Growth driven by Gen Z & Millennials (experience-first travelers).
+* AI adoption trend → 75% of travelers open to AI planning tools (source: surveys).
+* Opportunity to disrupt Booking.com, Airbnb, Google Travel.
+
+---
+
+## 5. Solution Overview
+
+**AI Travel Concierge** – AI-first booking platform.
+
+* Conversational input → curated itineraries (flights, stays, events).
+* Real price guarantees + auto-rebooking.
+* Group collaboration (trip boards, consensus, split payments).
+* Event bundling (sports, concerts, festivals).
+* All-in-one checkout.
+
+---
+
+## 6. Product Demo (Concept Visualization)
+
+* Screenshot/mocks: AI chat → 3 curated trip options.
+* Group board view with voting.
+* Event integration (concert tickets).
+* Price guarantee example.
+
+---
+
+## 7. Differentiation
+
+* **Trust-first**: Real guarantees, transparent fees.
+* **Deterministic advantage**: All-in-one booking prevents leakage.
+* **Group lock-in**: Collaboration tools no OTA offers.
+* **Emotional immersion**: AI-generated trip previews & trailers.
+* **Business model innovation**: Subscription + Trip Pass + Savings-Share.
+
+---
+
+## 8. Business Model
+
+* **Free Tier** → plan only (lead magnet).
+* **Trip Pass** → \$9–15 (individual/couple), \$39–59 (group).
+* **Pro Subscription** → \$12.99/month or \$89/year.
+* **Savings-Share** → 10–15% of verified savings, capped \$75/trip.
+* Supplier partnerships → lower commission than Booking.com.
+
+---
+
+## 9. Go-To-Market Strategy
+
+* **Phase 1 (0–6m)** → Launch Free + Trip Pass. Target couples & groups. Anchor on Price Guarantee.
+* **Phase 2 (6–18m)** → Add Subscription. Retarget repeat users. Influencer-driven growth.
+* **Phase 3 (18m+)** → Add Savings-Share. Expand to enterprise & suppliers.
+
+Channels: Influencer marketing, Reddit/travel forums, SEO content, partnerships with events.
+
+---
+
+## 10. Metrics & Traction
+
+* KPIs:
+
+  * Acquisition: new users.
+  * Activation: itineraries created.
+  * Conversion: % paying via Trip Pass/Subscription.
+  * Retention: renewal rate.
+  * Trust: guarantee usage + satisfaction.
+* Early pilot results (to be added with MVP testing).
+
+---
+
+## 11. Roadmap
+
+* **Phase 1 (MVP)**: Conversational AI, Trip Pass, group boards, event integration.
+* **Phase 2**: Subscription, loyalty optimization, family sharing.
+* **Phase 3**: Savings-Share, SMB/enterprise, global expansion.
+
+---
+
+## 12. Competitive Landscape
+
+* **Booking.com/Airbnb**: Search-based, commission-driven, no group features.
+* **Google Travel**: Discovery only, no trust layer.
+* **Hopper/TripIt**: Niche features (price freeze, itinerary mgmt).
+* **AI Concierge**: Trust, collaboration, events, all-in-one booking.
+
+---
+
+## 13. Financials (Model Snapshot)
+
+* Revenue streams: Trip Pass, Subscription, Savings-Share, Supplier partnerships.
+* Strong unit economics: lower CAC via organic sharing, higher LTV via group lock-in.
+* Illustrative revenue projections (3–5 years).
+
+---
+
+## 14. Team
+
+* Founders & key operators.
+* Advisors (travel industry, AI experts).
+* Highlight domain + execution experience.
+
+---
+
+## 15. Ask
+
+* Funding amount (e.g., Seed \$3–5M).
+* Use of funds: product dev, supplier integrations, GTM campaigns.
+* Milestones: MVP launch, 100k users, supplier deals.
+
+---
+
+## 16. Closing
+
+* Restate Vision: *"The world’s most trusted AI travel concierge."*
+* Tagline: *“Travel planning reinvented — simple, trusted, collaborative.”*
+* Call to action for investors/partners.
+
+---
