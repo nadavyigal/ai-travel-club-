@@ -1,0 +1,1 @@
+[2025-09-24T10:28:02.1883368+03:00] Starting frontend: npm run dev -- --port 3000
