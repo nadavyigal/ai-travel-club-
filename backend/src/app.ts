@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { supabase } from './config/supabase';
 import destinationsRouter from './routes/destinations';
+import authRouter from './api/auth';
+import usersRouter from './api/users';
 
 // Load environment variables
 dotenv.config();
@@ -56,6 +58,8 @@ app.get('/health', async (req, res) => {
 
 // API routes
 app.use('/api/v1/destinations', destinationsRouter);
+app.use('/v1/auth', authRouter);
+app.use('/v1/users', usersRouter);
 
 // API routes index
 app.get('/api/v1', (req, res) => {
@@ -88,3 +92,4 @@ app.use((req, res) => {
 });
 
 export default app;
+export { app };

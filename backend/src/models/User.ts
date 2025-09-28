@@ -2,19 +2,22 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 // Validation schemas
+const supportedProviders = [
+  'Delta', 'American', 'United', 'Southwest', 'Alaska',
+  'Marriott', 'Hilton', 'Hyatt', 'IHG', 'Choice',
+  'Hertz', 'Avis', 'Enterprise', 'Budget'
+] as const;
+
 export const LoyaltyProgramSchema = z.object({
-  provider: z.enum([
-    'Delta', 'American', 'United', 'Southwest', 'Alaska',
-    'Marriott', 'Hilton', 'Hyatt', 'IHG', 'Choice',
-    'Hertz', 'Avis', 'Enterprise', 'Budget'
-  ]),
-  account_id: z.string().min(1, 'account_id cannot be empty')
+  provider: z.enum(supportedProviders as unknown as [string, ...string[]]),
+  // Optional here so we can surface a custom message when missing via superRefine
+  account_id: z.string().min(1, 'account_id cannot be empty').optional()
 });
 
 export const UserProfileSchema = z.object({
-  budget_range: z.enum(['budget', 'mid-range', 'luxury']).optional(),
-  travel_style: z.enum(['adventure', 'relaxation', 'cultural', 'business']).optional(),
-  dietary_restrictions: z.array(z.string()).optional()
+  budget_range: z.enum(['budget', 'mid-range', 'luxury'] as [string, ...string[]]).optional(),
+  travel_style: z.enum(['adventure', 'relaxation', 'cultural', 'business'] as [string, ...string[]]).optional(),
+  dietary_restrictions: z.array(z.string().transform((s) => s.trim())).optional()
 });
 
 export const CreateUserSchema = z.object({
@@ -32,10 +35,23 @@ export const CreateUserSchema = z.object({
 export const UpdateUserProfileSchema = z.object({
   profile: UserProfileSchema.optional(),
   loyalty_programs: z.array(LoyaltyProgramSchema).optional()
-}).refine(
-  (data) => data.profile !== undefined || data.loyalty_programs !== undefined,
-  { message: 'no valid fields to update' }
-);
+}).superRefine((data, ctx) => {
+  if (data.profile === undefined && data.loyalty_programs === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'no valid fields to update' });
+  }
+  if (Array.isArray(data.loyalty_programs)) {
+    for (const p of data.loyalty_programs) {
+      if (!(p as any).provider || (p as any).provider === undefined) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'loyalty program must have provider and account_id' });
+        break;
+      }
+      if ((p as any).account_id === undefined) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'loyalty program must have provider and account_id' });
+        break;
+      }
+    }
+  }
+});
 
 // Type definitions
 export type LoyaltyProgram = z.infer<typeof LoyaltyProgramSchema>;
@@ -97,11 +113,13 @@ export class UserModel {
     const password_hash = await bcrypt.hash(validatedData.password, 12);
 
     // Create user
+    const sanitizedProfile = userData.profile ? this.sanitizeProfile(userData.profile) : null;
+
     const user: User = {
       id: this.generateId(),
       email: normalizedEmail,
       password_hash,
-      profile: validatedData.profile || null,
+      profile: sanitizedProfile,
       loyalty_programs: validatedData.loyalty_programs || [],
       created_at: new Date(),
       updated_at: new Date()
@@ -161,9 +179,15 @@ export class UserModel {
       }
     }
 
-    // Update fields
+    // Update fields with merge + sanitization
     if (validatedData.profile !== undefined) {
-      user.profile = validatedData.profile;
+      const current = user.profile || {};
+      const incoming = this.sanitizeProfile(validatedData.profile || {});
+      user.profile = {
+        budget_range: incoming.budget_range ?? current['budget_range'],
+        travel_style: incoming.travel_style ?? current['travel_style'],
+        dietary_restrictions: incoming.dietary_restrictions ?? current['dietary_restrictions']
+      } as any;
     }
 
     if (validatedData.loyalty_programs !== undefined) {
@@ -266,6 +290,29 @@ export class UserModel {
   private isValidUUID(uuid: string): boolean {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
+  }
+
+  /**
+   * Sanitize profile fields (trim, normalize, basic XSS guard)
+   */
+  private sanitizeProfile(profile: Partial<UserProfile>): UserProfile {
+    const sanitize = (value: string): string => {
+      let v = value.trim();
+      v = v.replace(/javascript:/gi, '');
+      v = v.replace(/<[^>]*>/g, '');
+      v = v.replace(/["'`]/g, '');
+      return v.toLowerCase();
+    };
+
+    const result: UserProfile = {
+      budget_range: profile.budget_range,
+      travel_style: profile.travel_style,
+      dietary_restrictions: Array.isArray(profile.dietary_restrictions)
+        ? profile.dietary_restrictions.map((s) => sanitize(String(s)))
+        : profile.dietary_restrictions as any
+    };
+
+    return result;
   }
 
   /**
