@@ -15,7 +15,8 @@
       "Bash(findstr:*)",
       "mcp__supabase__get_anon_key",
       "mcp__supabase__list_tables",
-      "mcp__supabase__get_advisors"
+      "mcp__supabase__get_advisors",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
