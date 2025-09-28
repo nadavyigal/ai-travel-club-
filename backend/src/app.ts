@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { checkDatabaseHealth } from './config/database';
+import { supabase } from './config/supabase';
+import destinationsRouter from './routes/destinations';
 
 // Load environment variables
 dotenv.config();
@@ -25,28 +26,45 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
-  const dbHealth = await checkDatabaseHealth();
-  const isHealthy = dbHealth.postgres && dbHealth.redis;
+  try {
+    const { data, error } = await supabase.from('destinations').select('count').limit(1);
+    const isHealthy = !error;
 
-  res.status(isHealthy ? 200 : 503).json({
-    status: isHealthy ? 'healthy' : 'unhealthy',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    services: {
-      database: dbHealth.postgres ? 'healthy' : 'unhealthy',
-      cache: dbHealth.redis ? 'healthy' : 'unhealthy',
-    },
-  });
+    return res.status(isHealthy ? 200 : 503).json({
+      status: isHealthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development',
+      services: {
+        supabase: isHealthy ? 'healthy' : 'unhealthy',
+        error: error?.message || null
+      },
+    });
+  } catch (err) {
+    return res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development',
+      services: {
+        supabase: 'unhealthy',
+        error: 'Connection failed'
+      },
+    });
+  }
 });
 
-// API routes placeholder
+// API routes
+app.use('/api/v1/destinations', destinationsRouter);
+
+// API routes index
 app.get('/api/v1', (req, res) => {
   res.json({
     message: 'AI Travel Concierge API v1',
     status: 'ready',
     endpoints: {
       health: '/health',
+      destinations: '/api/v1/destinations',
       docs: '/api/v1/docs'
     }
   });

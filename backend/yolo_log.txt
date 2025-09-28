@@ -1,1 +1,10 @@
 [2025-09-24T10:28:02.1883368+03:00] Starting frontend: npm run dev -- --port 3000
+[2025-09-24T10:48:36.0991923+03:00] Installing GitHub CLI: winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements
+[2025-09-24T10:50:19.3097044+03:00] Ensure gh on PATH
+[2025-09-24T10:50:19.4260346+03:00] gh auth status
+[2025-09-24T10:50:20.8173921+03:00] gh repo create ai-travel-club-frontend --private --source . --remote origin --push --confirm
+[2025-09-28T14:47:50.1204783+03:00] Check uv and Python presence
+[2025-09-28T14:48:23.9946489+03:00] Install uv via winget
+[2025-09-28T14:50:58.0718021+03:00] Install uv via official script
+[2025-09-28T14:53:07.4405518+03:00] uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+[2025-09-28T14:59:19.2060169+03:00] Set UTF-8 encoding and verify specify CLI
