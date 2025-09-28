@@ -1,10 +1,10 @@
-import app from './app';
+import app from './app-simple';
 import { supabase } from './config/supabase';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 const server = app.listen(PORT, () => {
-  console.log(`🚀 AI Travel Concierge API server running on port ${PORT}`);
+  console.log(`🚀 AI Travel Club API server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🌐 API v1: http://localhost:${PORT}/api/v1`);
   console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
