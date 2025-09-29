@@ -16,7 +16,15 @@
       "mcp__supabase__get_anon_key",
       "mcp__supabase__list_tables",
       "mcp__supabase__get_advisors",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx ts-node:*)",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__generate_typescript_types",
+      "Bash(npm test:*)",
+      "Bash(npm run dev:*)",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__apply_migration"
     ],
     "deny": [],
     "ask": []

@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { tripModel, Trip } from '../models/Trip.js';
-import { groupBoardModel, CreateGroupBoardInput, GroupBoard, CreateVoteInput, ItineraryVote, BoardSummary } from '../models/GroupBoard.js';
-import { userModel } from '../models/User.js';
-import { itineraryModel } from '../models/Itinerary.js';
+import { tripModel, Trip } from '../models/Trip';
+import { groupBoardModel, CreateGroupBoardInput, GroupBoard, CreateVoteInput, ItineraryVote, BoardSummary } from '../models/GroupBoard';
+import { userModel } from '../models/User';
+import { itineraryModel } from '../models/Itinerary';
 
 // Validation schemas
 export const CreateGroupBoardRequestSchema = z.object({
@@ -325,7 +325,7 @@ export class GroupService {
 
     // Get voting data
     const boardVotes = await groupBoardModel.getBoardVotes(board.id);
-    const uniqueVoters = new Set(boardVotes.map(vote => vote.user_id));
+    const uniqueVoters = new Set(boardVotes.map((vote: any) => vote.user_id));
     const eligibleVoters = trip.member_ids.length;
     const participationRate = eligibleVoters > 0 ? uniqueVoters.size / eligibleVoters : 0;
 
@@ -341,7 +341,7 @@ export class GroupService {
 
     // Find most active voter
     const votesByUser = new Map<string, number>();
-    boardVotes.forEach(vote => {
+    boardVotes.forEach((vote: any) => {
       votesByUser.set(vote.user_id, (votesByUser.get(vote.user_id) || 0) + 1);
     });
 
@@ -483,7 +483,7 @@ export class GroupService {
 export const groupService = GroupService.getInstance();
 
 // CLI Interface
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const command = process.argv[2];
   const args = process.argv.slice(3);
 
@@ -494,6 +494,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
       const [tripId, creatorId, hoursStr, thresholdStr] = args;
+
+      if (!tripId || !creatorId) {
+        console.error('Trip ID and Creator ID are required');
+        process.exit(1);
+      }
+
       const request = {
         trip_id: tripId,
         voting_deadline_hours: hoursStr ? parseInt(hoursStr) : 72,
@@ -512,6 +518,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
       const [tId, uId, invitedBy] = args;
 
+      if (!tId || !uId || !invitedBy) {
+        console.error('All arguments are required');
+        process.exit(1);
+      }
+
       groupService.inviteMember({ trip_id: tId, user_id: uId, invited_by: invitedBy })
       .then(trip => console.log('Member Invited:', JSON.stringify(trip.member_ids, null, 2)))
       .catch(error => console.error('Error:', error.message));
@@ -524,12 +535,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
       const [boardId, itineraryId, userId, voteType, comment] = args;
 
+      if (!boardId || !itineraryId || !userId || !voteType) {
+        console.error('Board ID, Itinerary ID, User ID, and Vote Type are required');
+        process.exit(1);
+      }
+
       groupService.submitVote({
         board_id: boardId,
         itinerary_id: itineraryId,
         user_id: userId,
         vote_type: voteType as 'upvote' | 'downvote' | 'abstain',
-        comment
+        comment: comment || undefined
       })
       .then(result => console.log('Vote Submitted:', JSON.stringify(result, null, 2)))
       .catch(error => console.error('Error:', error.message));
@@ -541,6 +557,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
       const [insightsTripId] = args;
+
+      if (!insightsTripId) {
+        console.error('Trip ID is required');
+        process.exit(1);
+      }
 
       groupService.getGroupInsights(insightsTripId)
       .then(insights => console.log('Group Insights:', JSON.stringify(insights, null, 2)))
@@ -555,6 +576,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const [activityTripId, limitStr] = args;
       const limit = limitStr ? parseInt(limitStr) : 50;
 
+      if (!activityTripId) {
+        console.error('Trip ID is required');
+        process.exit(1);
+      }
+
       groupService.getGroupActivity(activityTripId, limit)
       .then(activities => console.log('Recent Activity:', JSON.stringify(activities, null, 2)))
       .catch(error => console.error('Error:', error.message));
@@ -566,6 +592,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
       const [bId, startedBy] = args;
+
+      if (!bId || !startedBy) {
+        console.error('Board ID and Started By are required');
+        process.exit(1);
+      }
 
       groupService.startVoting(bId, startedBy)
       .then(board => console.log('Voting Started:', JSON.stringify(board, null, 2)))

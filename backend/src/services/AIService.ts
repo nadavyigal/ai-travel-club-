@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { tripModel, CreateTripInput, Trip } from '../models/Trip.js';
-import { itineraryModel, CreateItineraryInput, Itinerary } from '../models/Itinerary.js';
+import { tripModel, CreateTripInput, Trip } from '../models/Trip';
+import { itineraryModel, CreateItineraryInput, Itinerary } from '../models/Itinerary';
 
 // Validation schemas
 export const TripPlanningRequestSchema = z.object({
@@ -369,12 +369,12 @@ export class AIService {
     // Mock optimization response
     return {
       optimized_plan: {
-        activities: itinerary.activities.map(activity => ({
+        activities: itinerary.activities.map((activity: any) => ({
           ...activity,
           estimated_cost: activity.estimated_cost * 0.9 // 10% cost reduction
         })),
         accommodation_recommendations: itinerary.accommodation_recommendations,
-        transportation_recommendations: itinerary.transportation_recommendations.map(transport => ({
+        transportation_recommendations: itinerary.transportation_recommendations.map((transport: any) => ({
           ...transport,
           estimated_cost: transport.estimated_cost * 0.85 // 15% cost reduction
         }))
@@ -421,7 +421,7 @@ export class AIService {
 export const aiService = AIService.getInstance();
 
 // CLI Interface
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const command = process.argv[2];
   const args = process.argv.slice(3);
 
@@ -436,10 +436,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
       const [destination, startDate, endDate, budgetStr, creatorId] = args;
-      const budget = parseFloat(budgetStr);
+      const budget = parseFloat(budgetStr || '0');
+
+      if (!destination || !startDate || !endDate || !budgetStr || !creatorId) {
+        console.error('Missing required arguments');
+        process.exit(1);
+      }
 
       aiService.generateTripPlan({
-        destination,
+        destination: destination,
         start_date: startDate,
         end_date: endDate,
         budget_total: budget,
@@ -456,6 +461,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
       const [tripId] = args;
 
+      if (!tripId) {
+        console.error('Trip ID is required');
+        process.exit(1);
+      }
+
       aiService.validateTripFeasibility(tripId)
       .then(result => console.log('Feasibility:', JSON.stringify(result, null, 2)))
       .catch(error => console.error('Error:', error.message));
@@ -467,6 +477,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         process.exit(1);
       }
       const [dest] = args;
+
+      if (!dest) {
+        console.error('Destination is required');
+        process.exit(1);
+      }
 
       aiService.getActivityRecommendations(dest)
       .then(result => console.log('Recommendations:', JSON.stringify(result, null, 2)))

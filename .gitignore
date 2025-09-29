@@ -1,0 +1,3 @@
+# Ignore Windows reserved filename accidentally added
+nul
+_nul_ignored*
