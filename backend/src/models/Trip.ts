@@ -135,7 +135,10 @@ export class TripModel {
     // Validate dates if provided
     const newStartDate = validatedData.start_date ?? trip.start_date.toISOString().split('T')[0];
     const newEndDate = validatedData.end_date ?? trip.end_date.toISOString().split('T')[0];
-    await this.validateDates(newStartDate, newEndDate);
+
+    if (newStartDate && newEndDate) {
+      await this.validateDates(newStartDate, newEndDate);
+    }
 
     // Validate member IDs if provided
     if (validatedData.member_ids) {
