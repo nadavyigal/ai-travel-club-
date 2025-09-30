@@ -56,10 +56,44 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// Import additional routes
+import tripsRouter from './routes/trips';
+import groupsRouter from './routes/groups';
+import paymentsRouter from './routes/payments';
+import bookingsRouter from './routes/bookings';
+import eventsRouter from './routes/events';
+import rateLimit from 'express-rate-limit';
+
+// Rate limiting for AI endpoints
+const aiRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100, // 100 requests per hour
+  message: { error: 'Too Many Requests', message: 'rate limit exceeded', code: 429 },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// General rate limiter for all endpoints
+const generalRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // 1000 requests per hour
+  message: { error: 'Too Many Requests', message: 'rate limit exceeded', code: 429 },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Apply general rate limiting globally
+app.use(generalRateLimiter);
+
 // API routes
 app.use('/api/v1/destinations', destinationsRouter);
 app.use('/v1/auth', authRouter);
 app.use('/v1/users', usersRouter);
+app.use('/v1/trips', aiRateLimiter, tripsRouter);
+app.use('/v1/groups', groupsRouter);
+app.use('/v1/payments', paymentsRouter);
+app.use('/v1/bookings', bookingsRouter);
+app.use('/v1/events', eventsRouter);
 
 // API routes index
 app.get('/api/v1', (req, res) => {
