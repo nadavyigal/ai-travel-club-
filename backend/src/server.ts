@@ -1,16 +1,26 @@
+import { createServer } from 'http';
 import app from './app';
 import { supabase } from './config/supabase';
+import { realtimeService } from './services/RealtimeService';
+import { jobQueue } from './services/JobQueue';
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 AI Travel Concierge API server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🌐 API v1: http://localhost:${PORT}/api/v1`);
-  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+// Create HTTP server for Socket.IO
+const httpServer = createServer(app);
 
-  // Test Supabase connection (non-blocking)
-  (async () => {
+// Initialize services
+(async () => {
+  try {
+    // Initialize WebSocket server
+    await realtimeService.initialize(httpServer);
+    console.log('✅ Real-time service initialized');
+
+    // Initialize job queue
+    await jobQueue.initialize();
+    console.log('✅ Job queue initialized');
+
+    // Test Supabase connection (non-blocking)
     try {
       const { data, error } = await supabase.from('destinations').select('count').limit(1);
       if (error) {
@@ -21,20 +31,34 @@ const server = app.listen(PORT, () => {
     } catch (err) {
       console.warn('⚠️  Supabase connection failed:', err);
     }
-  })();
+  } catch (error) {
+    console.error('❌ Service initialization failed:', error);
+  }
+})();
+
+const server = httpServer.listen(PORT, () => {
+  console.log(`🚀 AI Travel Concierge API server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌐 API v1: http://localhost:${PORT}/api/v1`);
+  console.log(`🔌 WebSocket: ws://localhost:${PORT}`);
+  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
+  await realtimeService.shutdown();
+  await jobQueue.shutdown();
   server.close(() => {
     console.log('Process terminated');
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
+  await realtimeService.shutdown();
+  await jobQueue.shutdown();
   server.close(() => {
     console.log('Process terminated');
     process.exit(0);

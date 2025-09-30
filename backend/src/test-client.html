@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-time Group Board Test Client</title>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-top: 0;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .status.connected {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .events {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .event {
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border-left: 4px solid #007bff;
+      border-radius: 4px;
+    }
+    .event.vote {
+      border-left-color: #28a745;
+    }
+    .event.consensus {
+      border-left-color: #ffc107;
+      font-weight: bold;
+    }
+    .timestamp {
+      color: #6c757d;
+      font-size: 0.85em;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      padding: 15px;
+      background: #e9ecef;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2em;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .stat-label {
+      color: #6c757d;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔌 Real-time Group Board Test Client</h1>
+
+    <div id="status" class="status disconnected">
+      ❌ Disconnected
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="voteCount">0</div>
+        <div class="stat-label">Total Votes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="consensusProgress">0%</div>
+        <div class="stat-label">Progress</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="eventCount">0</div>
+        <div class="stat-label">Events</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="boardIdInput" placeholder="Enter Board ID" style="width: 300px;">
+      <button onclick="joinBoard()">Join Board</button>
+      <button onclick="leaveBoard()">Leave Board</button>
+      <button onclick="clearEvents()">Clear Events</button>
+    </div>
+
+    <h2>📡 Real-time Events</h2>
+    <div class="events" id="events">
+      <p style="color: #6c757d; text-align: center;">Waiting for events...</p>
+    </div>
+  </div>
+
+  <script>
+    let socket;
+    let currentBoardId = null;
+    let eventCount = 0;
+    let voteCount = 0;
+    let consensusProgress = 0;
+
+    // Connect to Socket.IO server
+    function connect() {
+      socket = io('http://localhost:3000', {
+        transports: ['websocket', 'polling']
+      });
+
+      socket.on('connect', () => {
+        updateStatus(true);
+        addEvent('system', 'Connected to server', { clientId: socket.id });
+      });
+
+      socket.on('disconnect', () => {
+        updateStatus(false);
+        addEvent('system', 'Disconnected from server');
+      });
+
+      socket.on('joined:board', (data) => {
+        addEvent('system', `Joined board: ${data.boardId}`, data);
+      });
+
+      socket.on('vote:cast', (data) => {
+        voteCount = data.totalVotes;
+        consensusProgress = Math.round(data.consensusProgress * 100);
+        updateStats();
+        addEvent('vote', `Vote cast: ${data.voteType}`, data);
+      });
+
+      socket.on('consensus:reached', (data) => {
+        addEvent('consensus', '🎉 Consensus Reached!', data);
+      });
+
+      socket.on('board:created', (data) => {
+        addEvent('system', 'Board created', data);
+      });
+
+      socket.on('board:updated', (data) => {
+        addEvent('system', 'Board updated', data);
+      });
+
+      socket.on('error', (error) => {
+        addEvent('error', 'Error occurred', { error: error.message });
+      });
+    }
+
+    function joinBoard() {
+      const boardId = document.getElementById('boardIdInput').value.trim();
+      if (!boardId) {
+        alert('Please enter a Board ID');
+        return;
+      }
+
+      currentBoardId = boardId;
+      socket.emit('join:board', boardId);
+    }
+
+    function leaveBoard() {
+      if (!currentBoardId) {
+        alert('Not currently in a board');
+        return;
+      }
+
+      socket.emit('leave:board', currentBoardId);
+      addEvent('system', `Left board: ${currentBoardId}`);
+      currentBoardId = null;
+    }
+
+    function updateStatus(connected) {
+      const statusDiv = document.getElementById('status');
+      if (connected) {
+        statusDiv.className = 'status connected';
+        statusDiv.textContent = '✅ Connected';
+      } else {
+        statusDiv.className = 'status disconnected';
+        statusDiv.textContent = '❌ Disconnected';
+      }
+    }
+
+    function addEvent(type, message, data = {}) {
+      eventCount++;
+      const eventsDiv = document.getElementById('events');
+
+      // Clear placeholder if first event
+      if (eventCount === 1) {
+        eventsDiv.innerHTML = '';
+      }
+
+      const eventDiv = document.createElement('div');
+      eventDiv.className = `event ${type}`;
+
+      const timestamp = new Date().toLocaleTimeString();
+      eventDiv.innerHTML = `
+        <strong>${message}</strong>
+        <div class="timestamp">${timestamp}</div>
+        ${Object.keys(data).length > 0 ? `<pre style="margin-top: 10px; font-size: 0.85em;">${JSON.stringify(data, null, 2)}</pre>` : ''}
+      `;
+
+      eventsDiv.insertBefore(eventDiv, eventsDiv.firstChild);
+      updateStats();
+
+      // Limit to 50 events
+      while (eventsDiv.children.length > 50) {
+        eventsDiv.removeChild(eventsDiv.lastChild);
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('voteCount').textContent = voteCount;
+      document.getElementById('consensusProgress').textContent = `${consensusProgress}%`;
+      document.getElementById('eventCount').textContent = eventCount;
+    }
+
+    function clearEvents() {
+      document.getElementById('events').innerHTML = '<p style="color: #6c757d; text-align: center;">Waiting for events...</p>';
+      eventCount = 0;
+      voteCount = 0;
+      consensusProgress = 0;
+      updateStats();
+    }
+
+    // Auto-connect on load
+    connect();
+  </script>
+</body>
+</html>
