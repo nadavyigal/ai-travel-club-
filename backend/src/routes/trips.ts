@@ -35,10 +35,17 @@ const TripPlanRequestSchema = z.object({
 // POST /v1/trips/plan - AI Trip Planning Endpoint
 router.post('/plan', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   const startTime = Date.now();
+  console.log('═══════════════════════════════════════');
+  console.log('📍 BACKEND: Received trip planning request');
+  console.log('👤 User ID:', req.user?.id);
+  console.log('📧 User Email:', req.user?.email);
+  console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+  console.log('═══════════════════════════════════════');
 
   try {
     // Validate request body
     const validatedData = TripPlanRequestSchema.parse(req.body);
+    console.log('✅ Request validated successfully');
 
     if (!req.user) {
       return res.status(401).json({
@@ -206,6 +213,109 @@ router.post('/plan', requireAuth, async (req: AuthenticatedRequest, res: Respons
       return res.status(500).json({
         error: 'Internal Server Error',
         message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+        code: 500
+      });
+    }
+
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred',
+      code: 500
+    });
+  }
+});
+
+// POST /v1/trips/modify - AI Chat Modification Endpoint
+router.post('/modify', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  console.log('═══════════════════════════════════════');
+  console.log('📍 BACKEND: Received itinerary modification request');
+  console.log('👤 User ID:', req.user?.id);
+  console.log('📦 Request body keys:', Object.keys(req.body));
+  console.log('═══════════════════════════════════════');
+
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'authentication required',
+        code: 401
+      });
+    }
+
+    const { itinerary, modification_request, original_plan_data } = req.body;
+
+    if (!itinerary || !modification_request) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'itinerary and modification_request are required',
+        code: 400
+      });
+    }
+
+    // Build modification prompt
+    const modificationPrompt = `
+You are helping modify an existing travel itinerary based on user feedback.
+
+Original Itinerary:
+${JSON.stringify(itinerary, null, 2)}
+
+User's Modification Request:
+"${modification_request}"
+
+Please modify the itinerary according to the user's request while:
+1. Maintaining the overall trip structure (dates, destination, currency)
+2. Keeping the total cost within the original budget of ${itinerary.currency} ${itinerary.total_cost}
+3. Preserving activities/accommodations that weren't mentioned in the modification
+4. Only changing what the user explicitly requested
+
+Return your response in this exact JSON format:
+{
+  "modified_itinerary": {
+    // Full itinerary object with same structure as input, with requested modifications
+  },
+  "explanation": "Brief explanation of what was changed (2-3 sentences)"
+}
+
+Ensure the modified_itinerary has the exact same structure as the original, with all required fields.
+Return ONLY valid JSON, no additional text.
+`.trim();
+
+    // Get AI service and generate modification
+    const aiService = getTripPlanningAIService();
+    const aiResponse = await (aiService as any).aiProviders.generateWithFallback(modificationPrompt);
+
+    // Parse AI response
+    let cleanedContent = aiResponse.content.trim();
+    if (cleanedContent.startsWith('```json')) {
+      cleanedContent = cleanedContent.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    } else if (cleanedContent.startsWith('```')) {
+      cleanedContent = cleanedContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
+    }
+
+    const parsed = JSON.parse(cleanedContent);
+
+    if (!parsed.modified_itinerary || !parsed.explanation) {
+      throw new Error('Invalid AI response format');
+    }
+
+    // Ensure modified itinerary has required fields
+    parsed.modified_itinerary.itinerary_id = itinerary.itinerary_id || itinerary.id;
+    parsed.modified_itinerary.currency = itinerary.currency;
+
+    console.log('✅ Itinerary modified successfully');
+
+    return res.status(200).json({
+      modified_itinerary: parsed.modified_itinerary,
+      explanation: parsed.explanation
+    });
+
+  } catch (error: unknown) {
+    console.error('💥 Modification error:', error);
+
+    if (error instanceof Error) {
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Failed to modify itinerary',
         code: 500
       });
     }

@@ -1,8 +1,12 @@
 import { createServer } from 'http';
+import dotenv from 'dotenv';
 import app from './app';
 import { supabase } from './config/supabase';
 import { realtimeService } from './services/RealtimeService';
 import { jobQueue } from './services/JobQueue';
+
+// Load environment variables FIRST
+dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
@@ -66,3 +70,4 @@ process.on('SIGINT', async () => {
 });
 
 export default server;
+
