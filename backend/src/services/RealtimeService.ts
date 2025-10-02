@@ -31,7 +31,15 @@ export class RealtimeService {
       cors: {
         origin: process.env.NODE_ENV === 'production'
           ? ['https://your-domain.com']
-          : ['http://localhost:3006', 'http://localhost:3001', 'http://localhost:3000'],
+          : [
+              'http://localhost:3000',
+              'http://localhost:3001',
+              'http://localhost:3002',
+              'http://localhost:3003',
+              'http://localhost:3004',
+              'http://localhost:3005',
+              'http://localhost:3006'
+            ],
         credentials: true
       },
       transports: ['websocket', 'polling']
@@ -63,32 +71,37 @@ export class RealtimeService {
       });
     });
 
-    // Initialize Redis Pub/Sub for distributed events
-    try {
-      this.redisPublisher = createRedisClient({
-        url: process.env.REDIS_URL || 'redis://localhost:6379'
-      });
-      this.redisSubscriber = createRedisClient({
-        url: process.env.REDIS_URL || 'redis://localhost:6379'
-      });
+    // Initialize Redis Pub/Sub for distributed events (optional)
+    // Only attempt if REDIS_URL is explicitly configured
+    if (process.env.REDIS_URL && process.env.REDIS_URL !== 'redis://localhost:6379') {
+      try {
+        this.redisPublisher = createRedisClient({
+          url: process.env.REDIS_URL
+        });
+        this.redisSubscriber = createRedisClient({
+          url: process.env.REDIS_URL
+        });
 
-      await this.redisPublisher.connect();
-      await this.redisSubscriber.connect();
+        await this.redisPublisher.connect();
+        await this.redisSubscriber.connect();
 
-      // Subscribe to board events
-      await this.redisSubscriber.subscribe('board:events', (message) => {
-        try {
-          const event = JSON.parse(message);
-          this.handleBoardEvent(event);
-        } catch (error) {
-          console.error('Error handling board event:', error);
-        }
-      });
+        // Subscribe to board events
+        await this.redisSubscriber.subscribe('board:events', (message) => {
+          try {
+            const event = JSON.parse(message);
+            this.handleBoardEvent(event);
+          } catch (error) {
+            console.error('Error handling board event:', error);
+          }
+        });
 
-      console.log('✅ Redis Pub/Sub initialized for real-time events');
-    } catch (error) {
-      console.error('⚠️  Redis Pub/Sub initialization failed (using local only):', error);
-      // Continue without Redis - events will only work within single server instance
+        console.log('✅ Redis Pub/Sub initialized for real-time events');
+      } catch (error) {
+        console.warn('⚠️  Redis Pub/Sub initialization failed (using local-only mode)');
+        // Continue without Redis - events will only work within single server instance
+      }
+    } else {
+      console.log('ℹ️  Redis not configured - using local-only mode for real-time events');
     }
   }
 

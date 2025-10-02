@@ -30,7 +30,7 @@ class OpenAIProvider implements AIProviderInterface {
     this.config = config;
     this.client = new OpenAI({
       apiKey: config.apiKey,
-      timeout: config.timeout || 30000,
+      timeout: config.timeout || 120000, // 120 seconds for complex trip planning
     });
   }
 
@@ -188,7 +188,12 @@ export class AIProviders {
 
     for (let i = 0; i < this.providers.length; i++) {
       const providerIndex = (this.currentProviderIndex + i) % this.providers.length;
-      const provider = this.providers[providerIndex];
+
+      if (providerIndex >= this.providers.length) {
+        continue;
+      }
+
+      const provider = this.providers[providerIndex]!; // Non-null assertion - we checked bounds above
 
       try {
         const response = await provider.generateCompletion(prompt, schema);

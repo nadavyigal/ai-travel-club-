@@ -280,8 +280,27 @@ Generate exactly ${maxOptions} itineraries. Respond with ONLY the JSON, no addit
     modelUsed: string
   ): Itinerary[] {
     try {
+      // Clean up content - remove markdown code blocks if present
+      let cleanedContent = content.trim();
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
+      }
+
+      // Additional cleanup: try to fix truncated JSON by finding the last complete object
+      if (!cleanedContent.endsWith('}')) {
+        console.warn('AI response appears truncated, attempting to fix...');
+        // Find the last complete itinerary object
+        const lastCompleteObject = cleanedContent.lastIndexOf('}');
+        if (lastCompleteObject > 0) {
+          // Truncate to last complete object and close the array
+          cleanedContent = cleanedContent.substring(0, lastCompleteObject + 1) + ']}';
+        }
+      }
+
       // Parse JSON
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(cleanedContent);
 
       if (!parsed.itineraries || !Array.isArray(parsed.itineraries)) {
         throw new Error('Invalid response format: missing itineraries array');
@@ -432,7 +451,9 @@ Generate exactly ${maxOptions} itineraries. Respond with ONLY the JSON, no addit
     // Simple cache size management
     if (cache.size > 1000) {
       const firstKey = cache.keys().next().value;
-      cache.delete(firstKey);
+      if (firstKey) {
+        cache.delete(firstKey);
+      }
     }
   }
 
@@ -442,21 +463,46 @@ Generate exactly ${maxOptions} itineraries. Respond with ONLY the JSON, no addit
   private getDegradedFallback(request: TripPlanRequest, startTime: number): TripPlanResponse {
     const numDays = this.calculateDays(request.startDate, request.endDate);
 
+    // Generate more realistic fallback activities
+    const genericActivities = [
+      { name: 'City Walking Tour', location: 'City Center' },
+      { name: 'Visit Main Attractions', location: 'Tourist District' },
+      { name: 'Local Museum Visit', location: 'Cultural District' },
+      { name: 'Traditional Restaurant Experience', location: 'Local Area' },
+      { name: 'Shopping and Local Markets', location: 'Market District' },
+      { name: 'Parks and Recreation', location: 'Green Spaces' },
+      { name: 'Historical Sites Tour', location: 'Old Town' },
+      { name: 'Local Cuisine Tasting', location: 'Food District' },
+      { name: 'Scenic Views and Photography', location: 'Viewpoints' },
+      { name: 'Cultural Performance or Event', location: 'Entertainment District' }
+    ];
+
+    const fallbackActivities = Array.from({ length: numDays }, (_, i) => {
+      const activityTemplate = genericActivities[i % genericActivities.length]!;
+      return {
+        day: i + 1,
+        activity: `${activityTemplate.name} in ${request.destination}`,
+        location: activityTemplate.location,
+        price: Math.round((request.budgetTotal * 0.2) / numDays)
+      };
+    });
+
     const fallbackItinerary: Itinerary = {
       id: this.generateUUID(),
-      title: `${numDays}-Day Trip to ${request.destination}`,
+      title: `${numDays}-Day Discovery of ${request.destination}`,
       aiModelUsed: 'fallback',
       confidenceScore: 0.5,
-      totalCost: request.budgetTotal * 0.9, // Use 90% of budget
+      totalCost: request.budgetTotal * 0.9,
       currency: request.currency,
-      summary: `A ${numDays}-day itinerary for ${request.destination}. This is a fallback plan generated due to AI service unavailability.`,
+      summary: `A ${numDays}-day itinerary for ${request.destination}. Note: This is a basic plan. For detailed, personalized recommendations, please try again when AI service is available.`,
       accommodations: [
         {
-          name: 'Recommended Hotel',
+          name: `Centrally Located Hotel in ${request.destination}`,
           type: 'hotel',
           checkIn: request.startDate,
           checkOut: request.endDate,
-          pricePerNight: Math.round((request.budgetTotal * 0.5) / numDays)
+          pricePerNight: Math.round((request.budgetTotal * 0.5) / numDays),
+          address: 'City Center'
         }
       ],
       transportation: [
@@ -465,14 +511,11 @@ Generate exactly ${maxOptions} itineraries. Respond with ONLY the JSON, no addit
           from: 'Your Location',
           to: request.destination,
           date: request.startDate,
-          price: Math.round(request.budgetTotal * 0.2)
+          price: Math.round(request.budgetTotal * 0.2),
+          duration: 'Varies by origin'
         }
       ],
-      activities: Array.from({ length: numDays }, (_, i) => ({
-        day: i + 1,
-        activity: `Explore ${request.destination}`,
-        price: Math.round((request.budgetTotal * 0.2) / numDays)
-      }))
+      activities: fallbackActivities
     };
 
     return {

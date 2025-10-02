@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAuthToken } from '../utils/jwt';
+import { supabase } from '../config/supabase';
 
 export interface AuthenticatedRequest extends Request {
   user?: { id: string; email: string };
 }
 
-export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const header = req.headers['authorization'];
     if (!header) {
@@ -21,8 +21,14 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
     if (!token || typeof token !== 'string') {
       return res.status(401).json({ error: 'unauthorized', message: 'invalid token', code: 401 });
     }
-    const payload = verifyAuthToken(token as string);
-    req.user = { id: payload.userId, email: payload.email };
+
+    // Verify Supabase JWT token
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return res.status(401).json({ error: 'unauthorized', message: 'invalid token', code: 401 });
+    }
+
+    req.user = { id: data.user.id, email: data.user.email || '' };
     return next();
   } catch (err) {
     return res.status(401).json({ error: 'unauthorized', message: 'invalid token', code: 401 });
